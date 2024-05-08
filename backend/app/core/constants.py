@@ -1,0 +1,5 @@
+ACCESS_TOKEN = "access_token"
+REFRESH_TOKEN = "refresh_token"
+ADMIN = "admin"
+GUEST = "guest"
+USER = "user"
