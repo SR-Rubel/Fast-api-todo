@@ -1,13 +1,17 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Cookie, Depends, status
-from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordRequestForm
-
 from app.core.dependencies import get_current_user
+from app.interface.user_registration_interface import UserRegistrationInterface
 from app.schema.auth_schema import CreateUserRequest, CreateUserResponse
 from app.services.auth_service import AuthInterface, AuthService
 from app.services.jwt_token_service import JWTTokenInterface, JWTTokenService
+from app.services.user_registration_service import (
+    UserRegistrationService,
+    user_registration_service,
+)
+from fastapi import APIRouter, Cookie, Depends, Form, Request, status
+from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -41,6 +45,20 @@ async def login_for_access_token(
     return response
 
 
+@router.get("/verify-email")
+async def verify_email(
+    token: str,
+    request: Request,
+    user_registration_service: UserRegistrationInterface = Depends(
+        UserRegistrationService
+    ),
+):
+    template = user_registration_service.verify_email(token)
+    return template.TemplateResponse(
+        "email-verification-success.html", {"request": request}
+    )
+
+
 @router.post("/refresh_token")
 async def refresh_token(
     jwt_token_service: JWTTokenInterface = Depends(JWTTokenService),
@@ -51,6 +69,25 @@ async def refresh_token(
     response.set_cookie(
         key="access_token", value=access_token, httponly=True, secure=True
     )
+    return response
+
+@router.get("/send-password-reset-link")
+async def password_reset_link(
+):
+    user_registration_service.send_reset_password_link()
+    response = JSONResponse({"msg": "Password reset successful"})
+    return response
+
+@router.post("/reset-password")
+async def password_reset(
+    token: str,
+    new_password: Annotated[str, Form()],
+    user_registration_service: UserRegistrationInterface = Depends(
+        UserRegistrationService
+    ),
+):
+    user_registration_service.reset_password(token, new_password)
+    response = JSONResponse({"msg": "Password reset successful"})
     return response
 
 

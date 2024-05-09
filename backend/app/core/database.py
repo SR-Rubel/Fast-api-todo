@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 from app.core.context_manager import context_set_db_session_rollback
 from app.logger import logger
+import traceback
 
 engine = create_engine(settings.database.url, pool_pre_ping=True)
 
@@ -20,16 +21,16 @@ def get_db():
             logger.info("rollback db session")
         else:
             db.commit()
-    except HTTPException as e:
-        logger.error(e)
-        db.rollback()
-        raise e
-    except Exception as e:
-        logger.error(e)
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error occurred",
-        )
+    # except HTTPException as e:
+    #     logger.error(e)
+    #     db.rollback()
+    #     raise e
+    # except Exception as e:
+    #     logger.error(e)
+    #     db.rollback()
+    #     raise HTTPException(
+    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #         detail="Internal server error occurred",
+    #     )
     finally:
         db.close()

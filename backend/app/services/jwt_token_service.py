@@ -1,15 +1,16 @@
 from datetime import datetime, timedelta
 
-from fastapi import Depends, HTTPException, status
-from jose import JWTError, jwt
-from sqlalchemy.orm import Session
-
 from app.core.config import settings
-from app.core.constants import ACCESS_TOKEN
+from app.core.constants import ACCESS_TOKEN, USER
 from app.core.database import get_db
 from app.interface.jwt_token_interface import JWTTokenInterface
 from app.models.token import Token
 from app.models.user import User
+from app.utils.helpers import decode_token
+from fastapi import Depends, HTTPException, status
+from jose import JWTError, jwt
+from jose.exceptions import ExpiredSignatureError
+from sqlalchemy.orm import Session
 
 
 class JWTTokenService(JWTTokenInterface):
@@ -44,9 +45,14 @@ class JWTTokenService(JWTTokenInterface):
         return token_model and not token_model.status
 
     def create_token(
-        self, email: str, id: int, validity: timedelta, type: str = ACCESS_TOKEN
+        self,
+        email: str,
+        id: int,
+        validity: timedelta,
+        type: str = ACCESS_TOKEN,
+        role: str = USER,
     ):
-        encode = {"sub": email, "id": id, "type": type}
+        encode = {"sub": email, "id": id, "type": type, "role": role}
         expires = datetime.now() + validity
         encode.update({"exp": expires})
         token = jwt.encode(
@@ -57,12 +63,17 @@ class JWTTokenService(JWTTokenInterface):
 
     def verify_token(self, token: str):
         try:
-            payload = jwt.decode(
-                token, key=settings.app.secret_key, algorithms=[settings.app.algorithm]
-            )
+            payload = decode_token(token)
             username = payload.get("sub")
             user_id = payload.get("id")
-            expire = payload.get("exp")
+            token_type = payload.get("type")
+
+        except ExpiredSignatureError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has expired",
+            )
+
         except JWTError:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -73,13 +84,6 @@ class JWTTokenService(JWTTokenInterface):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate the user",
-            )
-
-        expiration_time = datetime.fromtimestamp(expire)
-        if expiration_time < datetime.now():
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token has expired",
             )
 
         if self.is_blacklist_token(user_id, token):
@@ -103,7 +107,12 @@ class JWTTokenService(JWTTokenInterface):
                 detail="User not found or inactive",
             )
 
-        return {"username": username, "id": user_id, "role": user.role}
+        return {
+            "username": username,
+            "id": user_id,
+            "role": user.role,
+            "token_type": token_type,
+        }
 
     def refresh_token(self, refresh_token: str) -> str | bool:
         token_details = self.verify_token(refresh_token)
@@ -117,3 +126,5 @@ class JWTTokenService(JWTTokenInterface):
             token_details["username"], token_details["id"], timedelta(minutes=20)
         )
         return access_token
+
+jwt_token_service = JWTTokenService()

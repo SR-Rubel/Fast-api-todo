@@ -1,3 +1,5 @@
+import traceback
+
 from loguru import logger
 
 from app.core.config import settings
@@ -9,6 +11,7 @@ logger.add(
     level=settings.logging.level,
     rotation=settings.logging.rotation,
     retention=settings.logging.retention,
+    backtrace=True,
     compression="zip",
     serialize=settings.logging.serialization,
 )

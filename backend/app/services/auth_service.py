@@ -1,19 +1,20 @@
 from datetime import timedelta
 
-from fastapi import Depends, HTTPException, status
-from fastapi.responses import JSONResponse
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
-
 from app.core.constants import GUEST, REFRESH_TOKEN, USER
 from app.core.database import get_db
 from app.interface.auth_interface import AuthInterface
 from app.interface.jwt_token_interface import JWTTokenInterface
+from app.interface.user_registration_interface import UserRegistrationInterface
 from app.models.role import Role
 from app.models.user import User
 from app.schema.auth_schema import CreateUserRequest
 from app.services.jwt_token_service import JWTTokenService
+from app.services.user_registration_service import UserRegistrationService
 from app.utils.helpers import get_hashed_password, verify_password
+from fastapi import Depends, HTTPException, status
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 
 class AuthService(AuthInterface):
@@ -21,9 +22,13 @@ class AuthService(AuthInterface):
         self,
         db: Session = Depends(get_db),
         jwt_token_service: JWTTokenInterface = Depends(JWTTokenService),
+        user_registration_service: UserRegistrationInterface = Depends(
+            UserRegistrationService
+        ),
     ):
         self.jwt_token_service = jwt_token_service
         self.db = db
+        self.user_registration_service = user_registration_service
 
     def save_role(self, user_role: str = GUEST):
         role = Role(name=user_role)
@@ -40,6 +45,7 @@ class AuthService(AuthInterface):
             )
             self.db.add(user)
             self.db.commit()
+            self.user_registration_service.send_verification_mail(user.email, user.id)
         except IntegrityError as e:
             if "unique constraint" in str(e):
                 raise HTTPException(
@@ -76,3 +82,6 @@ class AuthService(AuthInterface):
         self.jwt_token_service.blacklist_token(user["id"], access_token)
         self.jwt_token_service.blacklist_token(user["id"], refresh_token)
         return response
+
+
+auth_service = AuthService()

@@ -51,6 +51,7 @@ class MailSettings:
 class AppSettings:
     env: str = os.getenv("APP_ENV", "local")
     host: str = os.getenv("APP_HOST")
+    frontend_url: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
     project_name: str = os.getenv("PROJECT_NAME", "Todo")
     project_version: str = os.getenv("PROJECT_VERSION", "1.0.0")
     secret_key: str = os.getenv("SECRET_KEY", "secret")
