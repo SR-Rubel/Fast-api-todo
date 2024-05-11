@@ -9,6 +9,7 @@ logger.add(
     level=settings.logging.level,
     rotation=settings.logging.rotation,
     retention=settings.logging.retention,
+    backtrace=True,
     compression="zip",
     serialize=settings.logging.serialization,
 )

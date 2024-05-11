@@ -1,3 +1,5 @@
+import traceback
+
 from fastapi import HTTPException, status
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -25,7 +27,7 @@ def get_db():
         db.rollback()
         raise e
     except Exception as e:
-        logger.error(e)
+        logger.exception(e)
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

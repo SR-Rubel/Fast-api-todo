@@ -66,3 +66,6 @@ class Mail:
         )
         fm = FastMail(self.conf)
         background_tasks.add_task(fm.send_message, message, template_name=template_name)
+
+
+mail = Mail()
