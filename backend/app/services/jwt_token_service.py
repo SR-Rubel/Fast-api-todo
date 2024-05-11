@@ -95,7 +95,6 @@ class JWTTokenService(JWTTokenInterface):
         user = (
             self.db.query(User)
             .filter(
-                User.is_active == True,
                 User.id == user_id,
             )
             .first()
@@ -104,13 +103,13 @@ class JWTTokenService(JWTTokenInterface):
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found or inactive",
+                detail="No user found",
             )
 
         return {
             "username": username,
             "id": user_id,
-            "role": user.role,
+            "role": user.role.name,
             "token_type": token_type,
         }
 

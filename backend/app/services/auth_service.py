@@ -63,9 +63,15 @@ class AuthService(AuthInterface):
         user = self.db.query(User).filter(User.email == email).first()
 
         if not user:
-            return False
+             raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials",
+            )
         if not verify_password(password, user.password):
-            return False
+             raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials",
+            )
         access_token = self.jwt_token_service.create_token(
             user.email, user.id, timedelta(minutes=20)
         )
@@ -77,8 +83,8 @@ class AuthService(AuthInterface):
 
     def logout(self, user: dict, access_token: str, refresh_token: str):
         response = JSONResponse({"msg": "Logged out!"})
-        response.delete_cookie(key="access_token")
-        response.delete_cookie(key="refresh_token")
+        response.delete_cookie(key="access_token", samesite='none', secure=True, httponly=True)
+        response.delete_cookie(key="refresh_token", samesite='none', secure=True, httponly=True)
         self.jwt_token_service.blacklist_token(user["id"], access_token)
         self.jwt_token_service.blacklist_token(user["id"], refresh_token)
         return response

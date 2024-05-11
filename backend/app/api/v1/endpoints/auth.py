@@ -1,4 +1,5 @@
 from typing import Annotated
+from datetime import timedelta
 
 from app.core.dependencies import get_current_user
 from app.interface.user_registration_interface import UserRegistrationInterface
@@ -9,10 +10,9 @@ from app.services.user_registration_service import (
     UserRegistrationService,
     user_registration_service,
 )
-from fastapi import APIRouter, Cookie, Depends, Form, Request, status
+from fastapi import APIRouter, Cookie, Depends, Form, Request, status, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
@@ -34,14 +34,22 @@ async def login_for_access_token(
 ):
     tokens = auth_service.login(form_data.username, form_data.password)
     response = JSONResponse(
-        {"msg": "Logged in successfully", "access_token": tokens["access_token"]}
+        {"msg": "Logged in successfully", "access_token": tokens["access_token"], "refresh_token": tokens["refresh_token"]}
     )
     response.set_cookie(
-        key="access_token", value=tokens["access_token"], httponly=True, secure=True
+        key="access_token", value=tokens["access_token"], httponly=True, samesite='none', secure=True
     )
     response.set_cookie(
-        key="refresh_token", value=tokens["refresh_token"], httponly=True, secure=True
+        key="refresh_token", value=tokens["refresh_token"], httponly=True, samesite='none', secure=True
     )
+    return response
+
+@router.get("/profile")
+async def login_for_access_token(
+    user: AuthInterface = Depends(get_current_user),
+):
+    print(user)
+    response = JSONResponse(user)
     return response
 
 
@@ -53,10 +61,8 @@ async def verify_email(
         UserRegistrationService
     ),
 ):
-    template = user_registration_service.verify_email(token)
-    return template.TemplateResponse(
-        "email-verification-success.html", {"request": request}
-    )
+    template = user_registration_service.verify_email(token, request)
+    return template
 
 
 @router.post("/refresh_token")
@@ -71,12 +77,23 @@ async def refresh_token(
     )
     return response
 
-@router.get("/send-password-reset-link")
+@router.post("/send-password-reset-link")
 async def password_reset_link(
+    email: Annotated[str, Form()],
+    user_registration_service: UserRegistrationInterface = Depends(
+        UserRegistrationService
+    ),
 ):
-    user_registration_service.send_reset_password_link()
-    response = JSONResponse({"msg": "Password reset successful"})
-    return response
+    res = user_registration_service.send_reset_password_link(email)
+    
+    if res:
+        response = JSONResponse({"msg": "Password reset link sent to your email successful"})
+        return response
+    
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Can not send reset mail. Try again later",
+    )
 
 @router.post("/reset-password")
 async def password_reset(
@@ -91,7 +108,7 @@ async def password_reset(
     return response
 
 
-@router.post("/logout")
+@router.get("/logout")
 async def logout(
     user: dict = Depends(get_current_user),
     access_token=Cookie(None),

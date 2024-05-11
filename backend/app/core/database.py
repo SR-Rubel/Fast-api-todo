@@ -21,16 +21,16 @@ def get_db():
             logger.info("rollback db session")
         else:
             db.commit()
-    # except HTTPException as e:
-    #     logger.error(e)
-    #     db.rollback()
-    #     raise e
-    # except Exception as e:
-    #     logger.error(e)
-    #     db.rollback()
-    #     raise HTTPException(
-    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         detail="Internal server error occurred",
-    #     )
+    except HTTPException as e:
+        logger.error(e)
+        db.rollback()
+        raise e
+    except Exception as e:
+        logger.exception(e)
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error occurred",
+        )
     finally:
         db.close()
