@@ -31,14 +31,15 @@
 
   &__right {
     margin-left: 0.2rem;
+    align-items: center;
+    display: flex;
+    gap: 2rem;
     svg {
       display: block;
       height: 1.5rem;
       width: 1.5rem;
+      cursor: pointer;
     }
-
-    align-items: center;
-    display: flex;
   }
 
   &__input {

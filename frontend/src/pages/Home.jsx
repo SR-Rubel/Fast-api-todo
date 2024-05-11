@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import BottomNav from 'components/BottomNav';
-import TaskContainer from 'components/TaskContainer';
+import ToastContainer  from 'components/ToastContainer';
+import TaskContainer  from 'components/TaskContainer';
+import Heading from 'components/Heading';
 import Loader from 'components/ui/Loader';
 import { loadTasksFromDB, toast } from 'redux/actions/TodoAction';
 import supabase from 'supabase';
@@ -30,17 +31,6 @@ function Home() {
     fetchTasks();
   }, []);
 
-  useEffect(() => {
-    axios
-      .get('/')
-      .then((response) => {
-        console.log(response);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
-
   return (
     <div className="home">
       {isLoading ? (
@@ -48,6 +38,8 @@ function Home() {
       ) : (
         <>
           {isSearching && <Loader />}
+          <ToastContainer />
+          <Heading />
           <BottomNav />
           <TaskContainer />
         </>

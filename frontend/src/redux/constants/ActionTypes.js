@@ -25,3 +25,7 @@ export const searchActionTypes = {
   SET_SEARCH: 'SET_SEARCH',
   SET_SEARCHING: 'SET_SEARCHING'
 };
+
+export const appActionTypes = {
+  SET_LOGGED_IN: 'SE_LOGGED_IN'
+};

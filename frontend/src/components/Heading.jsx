@@ -5,6 +5,7 @@ import Button from 'components/ui/Button';
 import { ReactComponent as SearchIcon } from 'assets/search.svg';
 import { ReactComponent as Logo } from 'assets/logo.svg';
 import { setSearch, setSearching } from 'redux/actions/SearchAction';
+import Profile from 'components/Profile';
 
 export default function Heading() {
   const [inputHidden, setInputHidden] = useState(true);
@@ -48,6 +49,7 @@ export default function Heading() {
         <Button variant="icon" onClick={onSearchClick}>
           <SearchIcon />
         </Button>
+        <Profile />
       </div>
     </div>
   );
