@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from starlette.background import BackgroundTasks
 
 from app.core.config import settings
-from app.core.constants import EMAIL_VERIFICATION_TOKEN, RESET_PASSWORD_TOKEN
+from app.core.constants import EMAIL_VERIFICATION_TOKEN, RESET_PASSWORD_TOKEN, ACCESS_TOKEN
 from app.core.database import get_db
 from app.core.mail import mail
 from app.interface.jwt_token_interface import JWTTokenInterface
@@ -93,7 +93,7 @@ class UserRegistrationService(UserRegistrationInterface):
     def reset_password(self, token: str, new_password: str):
         user = self.jwt_token_service.verify_token(token)
 
-        if user["token_type"] == RESET_PASSWORD_TOKEN and user:
+        if user and user["token_type"] in (RESET_PASSWORD_TOKEN, ACCESS_TOKEN):
             user_model = self.db.query(User).filter(User.id == user["id"]).first()
 
             if user_model:

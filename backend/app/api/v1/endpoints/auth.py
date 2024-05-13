@@ -122,6 +122,12 @@ async def password_reset(
 ):
     user_registration_service.reset_password(token, new_password)
     response = JSONResponse({"msg": "Password reset successful"})
+    response.delete_cookie(
+            key="access_token", samesite="none", secure=True, httponly=True
+        )
+    response.delete_cookie(
+        key="refresh_token", samesite="none", secure=True, httponly=True
+    )
     return response
 
 
