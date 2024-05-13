@@ -1,11 +1,12 @@
 from datetime import datetime
 from typing import Optional
 
+from fastapi import Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.models.task import Task
 from app.models.user import User
-from fastapi import Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from app.schema.task_schema import TaskCreateRequest
 
 
@@ -22,17 +23,22 @@ class TaskService:
         return new_task
 
     def get_all_tasks(self):
-        return (
-            self.db.query(Task).order_by(Task.id.asc()).all()
-        )
-    
+        return self.db.query(Task).order_by(Task.id.asc()).all()
+
     def get_all_tasks_by_user(self, user: dict):
         return (
-            self.db.query(Task).filter(Task.user == user['id']).order_by(Task.id.asc()).all()
+            self.db.query(Task)
+            .filter(Task.user == user["id"])
+            .order_by(Task.id.asc())
+            .all()
         )
 
     def get_task_by_id(self, user: dict, task_id: int):
-        task = self.db.query(Task).filter(Task.user_id == user['id'], Task.id == task_id).first()
+        task = (
+            self.db.query(Task)
+            .filter(Task.user_id == user["id"], Task.id == task_id)
+            .first()
+        )
         if not task:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Task not found"

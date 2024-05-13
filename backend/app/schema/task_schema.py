@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import Optional
 
-from app.schema.base_schema import ModelBaseInfo
 from pydantic import BaseModel, EmailStr, Field, constr
+
+from app.schema.base_schema import ModelBaseInfo
 
 
 class Task(ModelBaseInfo, BaseModel):

@@ -5,7 +5,11 @@ from sqlalchemy.orm import Session
 from starlette.background import BackgroundTasks
 
 from app.core.config import settings
-from app.core.constants import EMAIL_VERIFICATION_TOKEN, RESET_PASSWORD_TOKEN, ACCESS_TOKEN
+from app.core.constants import (
+    ACCESS_TOKEN,
+    EMAIL_VERIFICATION_TOKEN,
+    RESET_PASSWORD_TOKEN,
+)
 from app.core.database import get_db
 from app.core.mail import mail
 from app.interface.jwt_token_interface import JWTTokenInterface
@@ -73,11 +77,16 @@ class UserRegistrationService(UserRegistrationInterface):
     def send_reset_password_link(self, email: str):
         user = self.db.query(User).filter(User.email == email).first()
 
+        if user is None:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND, "No user found with this email"
+            )
+
         token = self.jwt_token_service.create_token(
             email, user.id, timedelta(minutes=30), RESET_PASSWORD_TOKEN
         )
 
-        url = f"{settings.app.frontend_url}/api/v1/auth/reset-password?token={token}"
+        url = f"{settings.app.frontend_url}/reset-password?token={token}"
 
         mail.send_email_background(
             self.background_tasks,
@@ -92,6 +101,9 @@ class UserRegistrationService(UserRegistrationInterface):
 
     def reset_password(self, token: str, new_password: str):
         user = self.jwt_token_service.verify_token(token)
+
+        if user is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "No user found")
 
         if user and user["token_type"] in (RESET_PASSWORD_TOKEN, ACCESS_TOKEN):
             user_model = self.db.query(User).filter(User.id == user["id"]).first()

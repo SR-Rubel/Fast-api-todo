@@ -13,10 +13,7 @@ from app.schema.auth_schema import (
 )
 from app.services.auth_service import AuthInterface, AuthService
 from app.services.jwt_token_service import JWTTokenInterface, JWTTokenService
-from app.services.user_registration_service import (
-    UserRegistrationService,
-    user_registration_service,
-)
+from app.services.user_registration_service import UserRegistrationService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -40,10 +37,18 @@ async def login_for_access_token(
     tokens = auth_service.login(form_data.username, form_data.password)
     response = JSONResponse({"msg": "Logged in successfully"})
     response.set_cookie(
-        key="access_token", value=tokens["access_token"], httponly=True, secure=True
+        key="access_token",
+        value=tokens["access_token"],
+        httponly=True,
+        secure=True,
+        samesite="none",
     )
     response.set_cookie(
-        key="refresh_token", value=tokens["refresh_token"], httponly=True, secure=True
+        key="refresh_token",
+        value=tokens["refresh_token"],
+        httponly=True,
+        secure=True,
+        samesite="none",
     )
     return response
 
@@ -106,9 +111,12 @@ async def refresh_token(
 @router.post("/send-password-reset-link")
 async def password_reset_link(
     email: Annotated[str, Form()],
+    user_registration_service: UserRegistrationInterface = Depends(
+        UserRegistrationService
+    ),
 ):
     user_registration_service.send_reset_password_link(email)
-    response = JSONResponse({"msg": "Password reset successful"})
+    response = JSONResponse({"msg": "Password reset mail sent to your email"})
     return response
 
 
@@ -123,8 +131,8 @@ async def password_reset(
     user_registration_service.reset_password(token, new_password)
     response = JSONResponse({"msg": "Password reset successful"})
     response.delete_cookie(
-            key="access_token", samesite="none", secure=True, httponly=True
-        )
+        key="access_token", samesite="none", secure=True, httponly=True
+    )
     response.delete_cookie(
         key="refresh_token", samesite="none", secure=True, httponly=True
     )

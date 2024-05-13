@@ -1,14 +1,14 @@
 from typing import Annotated
 
+from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Request, status
+from fastapi.responses import JSONResponse
+
 from app.core.dependencies import get_current_user
 from app.interface.user_registration_interface import UserRegistrationInterface
 from app.schema.auth_schema import CreateUserResponse
 from app.services.auth_service import AuthInterface, AuthService
 from app.services.jwt_token_service import JWTTokenInterface, JWTTokenService
 from app.services.user_service import UserService
-from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Request, status
-from fastapi.responses import JSONResponse
-
 
 router = APIRouter(prefix="/users", tags=["Users"])
 

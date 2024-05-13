@@ -1,10 +1,11 @@
+from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
+
 from app.core.dependencies import get_current_user
 from app.models.user import User
 from app.schema.auth_schema import CreateUserRequest, ProfileUpdateRequest
 from app.schema.task_schema import Task, TaskCreateRequest, TaskUpdateRequest
 from app.services.task_service import TaskService
-from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="", tags=["Tasks"])
 
@@ -42,7 +43,7 @@ def update_task(
     current_user: User = Depends(get_current_user),
     task_service: TaskService = Depends(TaskService),
 ):
-    return task_service.update_task(current_user, task_id ,update_task_request)
+    return task_service.update_task(current_user, task_id, update_task_request)
 
 
 @router.delete("/tasks/{task_id}")
@@ -52,4 +53,3 @@ async def delete_task(
     task_service: TaskService = Depends(TaskService),
 ):
     return await task_service.delete_task(current_user, task_id)
-

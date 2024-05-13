@@ -1,10 +1,10 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.core.base import Base
+from app.core.constants import LOW
 from app.models.base_model import BaseModel
 from app.models.user import User
-from app.core.constants import LOW
 
 
 class Task(Base, BaseModel):
