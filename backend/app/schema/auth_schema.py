@@ -1,6 +1,5 @@
-from pydantic import BaseModel, EmailStr, Field
-
 from app.schema.base_schema import ModelBaseInfo
+from pydantic import BaseModel, EmailStr, Field
 
 
 class BaseUser(BaseModel):
