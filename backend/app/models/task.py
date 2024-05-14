@@ -17,4 +17,5 @@ class Task(Base, BaseModel):
     description = Column(String)
     status = Column(Boolean, default=False)
     priority_level = Column(String, default=LOW)
+    due_date = Column(DateTime(timezone=True), default=None)
     completed_at = Column(DateTime(timezone=True), default=None)

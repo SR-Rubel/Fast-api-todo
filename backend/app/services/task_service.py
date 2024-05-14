@@ -1,13 +1,12 @@
 from datetime import datetime
 from typing import Optional
 
-from fastapi import Depends, HTTPException, status
-from sqlalchemy.orm import Session
-
 from app.core.database import get_db
 from app.models.task import Task
 from app.models.user import User
-from app.schema.task_schema import TaskCreateRequest
+from app.schema.task_schema import TaskCreateRequest, TaskUpdateRequest
+from fastapi import Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
 
 class TaskService:
@@ -45,10 +44,12 @@ class TaskService:
             )
         return task
 
-    def update_task(self, user: dict, task_id: int, update_data: dict):
+    def update_task(
+        self, user: dict, task_id: int, task_update_request: TaskUpdateRequest
+    ):
         task = self.get_task_by_id(user, task_id)
 
-        for field, value in update_data.items():
+        for field, value in task_update_request.model_dump().items():
             if hasattr(task, field):
                 setattr(task, field, value)
             else:
