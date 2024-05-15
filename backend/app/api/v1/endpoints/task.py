@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Annotated
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.faker.task_faker import create_dummy_tasks
@@ -6,7 +6,7 @@ from app.models.user import User
 from app.schema.auth_schema import CreateUserRequest, ProfileUpdateRequest
 from app.schema.task_schema import Task, TaskCreateRequest, TaskUpdateRequest
 from app.services.task_service import TaskService
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Form
 from fastapi.responses import JSONResponse
 from fastapi_pagination import Page
 
@@ -53,6 +53,15 @@ def update_task(
     task_service: TaskService = Depends(TaskService),
 ):
     return task_service.update_task(current_user, task_id, update_task_request)
+
+@router.put("/tasks/{task_id}/manage")
+def mark_as_complete(
+    task_id,
+    status: Annotated[str, Form()],
+    current_user: User = Depends(get_current_user),
+    task_service: TaskService = Depends(TaskService),
+):
+    return task_service.update_task(current_user, task_id)
 
 
 @router.delete("/tasks/{task_id}")

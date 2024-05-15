@@ -79,7 +79,8 @@ class TaskService:
         return {"message": "Task deleted successfully"}
 
 
-
+    def manage(self,task_id: int, status: bool, user: dict):
+        
 
     async def search_tasks(
         self,
