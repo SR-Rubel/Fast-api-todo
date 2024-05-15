@@ -9,6 +9,7 @@ from app.schema.base_schema import ModelBaseInfo
 
 class Task(ModelBaseInfo, BaseModel):
     user_id: int
+    title: str
     category: str
     description: str
     status: bool
@@ -50,11 +51,11 @@ class TaskCreateRequest(BaseModel):
 
 
 class TaskUpdateRequest(BaseModel):
-    title: Optional[str] = None
-    category: Optional[str] = None
-    description: Optional[str] = None
-    priority_level: Optional[str] = None
-    due_date: Optional[datetime] = None
+    title: Optional[str]
+    category: Optional[str]
+    description: Optional[str]
+    priority_level: Optional[str]
+    due_date: Optional[datetime]
 
     model_config = {
         "json_schema_extra": {
@@ -62,6 +63,7 @@ class TaskUpdateRequest(BaseModel):
                 "title": "Demo task title",
                 "category": "Work",
                 "description": "Finish the report",
+                "priority_level": "High",
                 "due_date": (datetime.now() + timedelta(days=1)).isoformat(),
             }
         }

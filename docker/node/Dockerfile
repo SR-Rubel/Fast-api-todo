@@ -8,4 +8,4 @@ RUN npm install
 
 COPY frontend/ .
 
-EXPOSE 3000
+EXPOSE 30001

@@ -1,12 +1,14 @@
 from datetime import datetime
 from typing import Optional
 
+from fastapi import Depends, HTTPException, status
+from fastapi_pagination import paginate
+from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.models.task import Task
 from app.models.user import User
 from app.schema.task_schema import TaskCreateRequest, TaskUpdateRequest
-from fastapi import Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
 
 class TaskService:
@@ -21,8 +23,15 @@ class TaskService:
         self.db.refresh(new_task)
         return new_task
 
-    def get_all_tasks(self):
-        return self.db.query(Task).order_by(Task.id.asc()).all()
+    def get_all_tasks(self, search_query, category, status):
+        tasks = self.db.query(Task)
+        if search_query:
+            tasks = tasks.filter(Task.title.ilike(f"%{search_query}%"))
+        if category:
+            tasks = tasks.filter(Task.category == category)
+        if status:
+            tasks = tasks.filter(Task.status == status)
+        return paginate(tasks.order_by(Task.id.asc()).all())
 
     def get_all_tasks_by_user(self, user: dict):
         return (
@@ -69,6 +78,9 @@ class TaskService:
         self.db.commit()
         return {"message": "Task deleted successfully"}
 
+
+
+
     async def search_tasks(
         self,
         current_user: User,
@@ -106,22 +118,22 @@ class TaskService:
             tasks = tasks.filter(Task.status == status)
         return tasks.order_by(Task.id.asc()).all()
 
-    async def update_task(self, current_user: User, task_id: int, update_data: dict):
-        task = await self.get_task_by_id(current_user, task_id)
-        for field, value in update_data.items():
-            if field == "status" and value:
-                task.completed_at = datetime.now()
-            elif hasattr(task, field):
-                setattr(task, field, value)
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Invalid field: {field}",
-                )
+    # async def update_task(self, current_user: User, task_id: int, update_data: dict):
+    #     task = await self.get_task_by_id(current_user, task_id)
+    #     for field, value in update_data.items():
+    #         if field == "status" and value:
+    #             task.completed_at = datetime.now()
+    #         elif hasattr(task, field):
+    #             setattr(task, field, value)
+    #         else:
+    #             raise HTTPException(
+    #                 status_code=status.HTTP_400_BAD_REQUEST,
+    #                 detail=f"Invalid field: {field}",
+    #             )
 
-        self.db.commit()
-        self.db.refresh(task)
-        return task
+    #     self.db.commit()
+    #     self.db.refresh(task)
+    #     return task
 
     # async def update_task(self, current_user: User, task_id: int, update_data: dict):
     #     task = await self.get_task_by_id(current_user, task_id)

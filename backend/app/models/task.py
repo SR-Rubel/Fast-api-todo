@@ -10,7 +10,7 @@ from app.models.user import User
 class Task(Base, BaseModel):
     __tablename__ = "tasks"
 
-    user_id = Column(Integer, ForeignKey(User.id, ondelete="SET NULL"), nullable=True)
+    user_id = Column(Integer, ForeignKey(User.id, ondelete="SET NULL"), nullable=False)
     user = relationship(User)
     title = Column(String)
     category = Column(String)
