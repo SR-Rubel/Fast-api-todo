@@ -197,4 +197,4 @@ async def logout(
     refresh_token=Cookie(None),
     auth_service: AuthInterface = Depends(AuthService),
 ):
-    return auth_service.logout(user, access_token, refresh_token)
+    return auth_service.logout(user['id'], access_token, refresh_token)

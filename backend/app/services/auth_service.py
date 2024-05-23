@@ -36,7 +36,7 @@ class AuthService(AuthInterface):
         self.db.add(role)
         self.db.commit()
 
-    def registration(self, create_user_request: CreateUserRequest):
+    def registration(self, create_user_request: CreateUserRequest) -> User:
         try:
             role = self.db.query(Role).filter(Role.name == USER).first()
             user = User(
@@ -78,7 +78,7 @@ class AuthService(AuthInterface):
         self.db.refresh(user)
         return user
 
-    def login(self, email: str, password: str):
+    def login(self, email: str, password: str) -> dict:
         user = self.db.query(User).filter(User.email == email).first()
 
         if not user:
