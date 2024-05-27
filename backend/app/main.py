@@ -15,7 +15,6 @@ if not os.path.exists(settings.app.asset_directory):
     os.makedirs(settings.app.asset_directory)
 
 app = FastAPI(lifespan=lifespan)
-app.add_middleware(BaseHTTPMiddleware, dispatch=profile_middleware)
 add_pagination(app)
 
 app.add_middleware(
@@ -25,6 +24,7 @@ app.add_middleware(
     allow_methods=settings.cors.methods,
     allow_headers=settings.cors.headers,
 )
+app.add_middleware(BaseHTTPMiddleware, dispatch=profile_middleware)
 
 app.mount("/files", StaticFiles(directory=settings.app.asset_directory), name="files")
 

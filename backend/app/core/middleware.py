@@ -1,3 +1,4 @@
+from app.logger import logger
 import cProfile
 import os
 from datetime import datetime
@@ -12,14 +13,18 @@ PROFILER_DIR = "profiler/"
 
 
 async def profile_middleware(request: Request, call_next):
-  os.makedirs(PROFILER_DIR, exist_ok=True)
-  file_name = generate_file_name(request)
-  pr = cProfile.Profile()
-  pr.enable()
-  response = await call_next(request)
-  pr.disable()
-  save_profiler_stats(pr, file_name)
-  return response
+  try:
+    os.makedirs(PROFILER_DIR, exist_ok=True)
+    file_name = generate_file_name(request)
+    pr = cProfile.Profile()
+    pr.enable()
+    response = await call_next(request)
+    pr.disable()
+    save_profiler_stats(pr, file_name)
+    return response
+  except Exception as e:
+    print(e)
+    logger.exception(e)
 
 
 def generate_file_name(request: Request) -> str:
