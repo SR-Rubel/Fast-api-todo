@@ -4,15 +4,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi_pagination import add_pagination
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.v1.endpoints.task import lifespan
 from app.api.v1.routes import routers
 from app.core.config import settings
+from app.core.middleware import  profile_middleware
 
 if not os.path.exists(settings.app.asset_directory):
     os.makedirs(settings.app.asset_directory)
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(BaseHTTPMiddleware, dispatch=profile_middleware)
 add_pagination(app)
 
 app.add_middleware(
