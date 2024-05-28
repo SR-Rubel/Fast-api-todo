@@ -22,6 +22,7 @@ import UserTableRow from '../user-table-row';
 import UserTableToolbar from '../user-table-toolbar';
 import { applyFilter, emptyRows, getComparator } from '../utils';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 // ----------------------------------------------------------------------
 
@@ -50,7 +51,7 @@ export default function UserPage() {
         }
       })
       .catch((error) => {
-        dispatch(toast({ type: TOAST_TYPE_ERROR, message: 'Unable to load user' }));
+        toast.error('could not load users');
       });
   }, [action]);
 

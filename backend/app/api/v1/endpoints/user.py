@@ -28,7 +28,7 @@ async def get_user(
 
 
 @router.put("/{user_id}/activate")
-def activate_user(user_id: int, user_service: UserInterface = Depends(UserService)):
+async def activate_user(user_id: int, user_service: UserInterface = Depends(UserService)):
     if user_service.activate_user(user_id):
         return {"message": "User activated successfully"}
     else:
