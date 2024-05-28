@@ -4,35 +4,30 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.interface.user_interface import UserInterface
 from app.models.user import User
+from app.db.crud import CRUDBase
 
 
-class UserService(UserInterface):
+class UserService(UserInterface, CRUDBase):
     def __init__(self, db: Session = Depends(get_db)):
         self.db = db
+        super().__init__(model=User)
+        
 
     def get_all_users(self):
-        return self.db.query(User).all()
+        return self.get_multi(self.db)
 
     def get_user(self, user_id: int):
-        return self.db.query(User).filter(User.id == user_id).first()
+        return self.get(self.db, user_id)
 
     def activate_user(self, user_id: int):
-        user = self.db.query(User).filter(User.id == user_id).first()
-        if user:
-            user.is_active = True
-            self.db.commit()
-            return True
-        else:
-            return False
-
+        update_data = {'id': user_id, 'is_active': True}
+        user = self.update(self.db, obj_in = update_data)
+        return user
+    
     def deactivate_user(self, user_id: int):
-        user = self.db.query(User).filter(User.id == user_id).first()
-        if user:
-            user.is_active = False
-            self.db.commit()
-            return True
-        else:
-            return False
+        update_data = {'id': user_id, 'is_active': False}
+        user = self.update(self.db, obj_in = update_data)
+        return user
 
     def delete_user(self, user_id: int, current_user: dict):
         if int(user_id) == current_user["id"]:
@@ -40,14 +35,7 @@ class UserService(UserInterface):
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="You can not delete yourself",
             )
+        
+        self.remove(db=self.db, id=user_id)
 
-        user = self.get_user(user_id)
-
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User not found",
-            )
-        self.db.delete(user)
-        self.db.commit()
         return {"message": "User deleted successfully"}

@@ -21,7 +21,6 @@ def get_db():
         else:
             db.commit()
     except HTTPException as e:
-        logger.error(e)
         db.rollback()
         raise e
     except Exception as e:
