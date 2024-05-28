@@ -38,7 +38,7 @@ async def activate_user(user_id: int, user_service: UserInterface = Depends(User
 
 
 @router.put("/{user_id}/deactivate")
-def deactivate_user(user_id: int, user_service: UserInterface = Depends(UserService)):
+async def deactivate_user(user_id: int, user_service: UserInterface = Depends(UserService)):
     if user_service.deactivate_user(user_id):
         return {"message": "User deactivated successfully"}
     else:
