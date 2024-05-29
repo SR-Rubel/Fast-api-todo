@@ -11,6 +11,7 @@ from starlette.background import BackgroundTasks
 from app.core.config import settings
 from app.core.constants import ADMIN
 from app.core.mail import mail
+from app.db.crud import CRUDBase
 from app.db.database import get_db
 from app.logger import logger
 from app.models.task import Task
@@ -18,7 +19,7 @@ from app.models.user import User
 from app.schema.task_schema import TaskCreateRequest, TaskUpdateRequest
 
 
-class TaskService:
+class TaskService(CRUDBase):
     def __init__(
         self,
         db: Session = Depends(get_db),
@@ -26,9 +27,10 @@ class TaskService:
     ):
         self.db = db
         self.background_tasks = background_tasks
+        super().__init__(model=Task)
 
     def create_task(self, user: dict, create_task_request: TaskCreateRequest):
-        new_task = Task(**create_task_request.model_dump())
+        new_task = self.create(self.db, create_task_request)
         new_task.user_id = user["id"]
         self.db.add(new_task)
         self.db.commit()
