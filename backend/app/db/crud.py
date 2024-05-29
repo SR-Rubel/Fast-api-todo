@@ -48,9 +48,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj
 
     def update(
-        self, db: Session, *, obj_in: Union[UpdateSchemaType, Dict[str, Any]]
+        self, db: Session, *, obj_in: Union[UpdateSchemaType, Dict[str, Any]], id: int
     ) -> ModelType:
-        db_obj = db.query(self.model).get(obj_in["id"])
+        db_obj = db.query(self.model).get(id)
         if not db_obj:
             logger.error(f"{self.model.__name__} not found with id: {id}")
             raise HTTPException(status.HTTP_404_NOT_FOUND, f"{self.model.__name__} not found")
@@ -58,7 +58,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
-            update_data = obj_in.dict(exclude_unset=True)
+            update_data = obj_in.model_dump(exclude_unset=True)
         for field in obj_data:
             if field in update_data:
                 setattr(db_obj, field, update_data[field])

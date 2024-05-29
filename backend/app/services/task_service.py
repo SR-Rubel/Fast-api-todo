@@ -32,7 +32,6 @@ class TaskService(CRUDBase):
     def create_task(self, user: dict, create_task_request: TaskCreateRequest):
         new_task = self.create(self.db, create_task_request)
         new_task.user_id = user["id"]
-        self.db.add(new_task)
         self.db.commit()
         self.db.refresh(new_task)
         return new_task
@@ -58,16 +57,10 @@ class TaskService(CRUDBase):
         return paginate(tasks.order_by(Task.created_at.desc()).all())
 
     def get_all_tasks_by_user(self, user: dict):
-        return (
-            self.db.query(Task)
-            .filter(Task.user == user["id"])
-            .order_by(Task.id.asc())
-            .all()
-        )
+        return self.get_multi_by_field(self.db,'user_id', user[id])
 
     def get_task_by_id(self, user: dict, task_id: int):
-        task = self.db.query(Task)
-        task = task.filter(Task.id == task_id)
+        task = self.db.query(Task).filter(Task.id == task_id)
         if user["role"] != ADMIN:
             task = task.filter(Task.user_id == user["id"])
         task = task.first()
@@ -81,20 +74,7 @@ class TaskService(CRUDBase):
         self, user: dict, task_id: int, task_update_request: TaskUpdateRequest
     ):
         task = self.get_task_by_id(user, task_id)
-
-        for field, value in task_update_request.model_dump().items():
-            if hasattr(task, field):
-                setattr(task, field, value)
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Invalid field: {field}",
-                )
-
-        task.updated_at = datetime.now()
-        self.db.commit()
-        self.db.refresh(task)
-        return task
+        return self.update(self.db, task_update_request, task.id)
 
     def delete_task(self, user: User, task_id: int):
         task = self.get_task_by_id(user, task_id)
