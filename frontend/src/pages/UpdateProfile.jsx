@@ -23,7 +23,7 @@ export default function UpdateProfile() {
   const submitHandler = (e) => {
     e.preventDefault();
     axios
-      .post('/auth/update-profile', { username: email, full_name: fullName })
+      .post('/auth/update-profile', { email: email, full_name: fullName })
       .then((response) => {
         if (response.status == 200) {
           dispatch(toast({ type: TOAST_TYPE_SUCCESS, message: 'Profile updated!' }));

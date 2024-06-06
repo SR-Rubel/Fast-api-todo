@@ -38,7 +38,7 @@ class UserRegistrationService(UserRegistrationInterface, CRUDBase):
     def send_verification_mail(
         self, db: Session, email: str, id: str, background_task: BackgroundTasks
     ):
-        user = self.get(db, id)
+        user = self.get_by_fields(db, {"id": id, "email": email})
 
         if user.is_email_verified:
             raise HTTPException(status.HTTP_200_OK, EMAIL_ALREADY_VERIFIED_MESSAGE)

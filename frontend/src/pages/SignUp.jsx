@@ -28,7 +28,7 @@ export default function SignUp() {
   const submitHandler = (e) => {
     e.preventDefault();
     let formData = new FormData();
-    formData.append('full_name', password);
+    formData.append('full_name', full_name);
     formData.append('email', email);
     formData.append('password', password);
     avatar ? formData.append('avatar', avatar) : '';

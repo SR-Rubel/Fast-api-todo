@@ -67,23 +67,23 @@ export default function Router() {
     },
     {
       path: 'reset-password',
-      element: <ResetPassword />
+      element: <ProtectedRoute><ResetPassword /></ProtectedRoute>
     },
     {
       path: 'change-password',
-      element: <ChangePassword />
+      element: <ProtectedRoute><ChangePassword /></ProtectedRoute>
     },
     {
       path: 'profile',
-      element: <FullProfile />
+      element: <ProtectedRoute><FullProfile /></ProtectedRoute>
     },
     {
       path: 'update-profile',
-      element: <UpdateProfile />
+      element: <ProtectedRoute><UpdateProfile /></ProtectedRoute>
     },
     {
       path: 'send-reset-link',
-      element: <SendResetLink />
+      element: <ProtectedRoute><SendResetLink /></ProtectedRoute>
     },
     {
       path: '404',

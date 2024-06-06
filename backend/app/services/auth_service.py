@@ -66,12 +66,13 @@ class AuthService(AuthInterface, CRUDBase):
         return user
 
     def profile_update(
-        self, db: Session, user_id, profile_update_request: ProfileUpdateRequest
+        self, db: Session, user_id, profile_update_request: ProfileUpdateRequest, background_task: BackgroundTasks
     ):
+
         if profile_update_request.email:
             profile_update_request.is_email_verified = False
             user_registration_service.send_verification_mail(
-                db, profile_update_request.email, user_id
+                db, profile_update_request.email, user_id, background_task
             )
 
         return self.update(db=db, obj_in=profile_update_request, id=user_id)

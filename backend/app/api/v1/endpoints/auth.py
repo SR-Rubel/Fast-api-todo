@@ -106,8 +106,9 @@ def update_profile(
     profile_update_request: ProfileUpdateRequest,
     user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
+    background_task: BackgroundTasks = BackgroundTasks(),
 ):
-    updated_user = auth_service.profile_update(db, user["id"], profile_update_request)
+    updated_user = auth_service.profile_update(db, user["id"], profile_update_request, background_task)
     return updated_user
 
 

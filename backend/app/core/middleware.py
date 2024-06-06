@@ -5,8 +5,6 @@ from datetime import datetime
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.logger import logger
-
 PROFILER_DIR = "profiler/"
 
 
@@ -39,3 +37,12 @@ class ProfileMiddleware(BaseHTTPMiddleware):
             self.save_profiler_stats(pr, file_name)
             return response
         return await call_next(request)
+
+
+# async def log_request_middleware(request: Request, call_next):
+#     """
+#     This middleware will log all requests and their processing time.
+#     E.g. log:
+#     0.0.0.0:1234 - GET /ping 200 OK 1.00ms
+#     """
+#     logger.
